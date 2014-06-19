@@ -42,10 +42,12 @@ object Ch03 {
     // foldRight(Cons(a, Nil), z)(f) ----> f(a, z)
     // foldRight(Cons(a, Cons(b, Nil)), z)(f) ----> f(a, f(b, z))
     // foldRight(Cons(a, Cons(b, Cons(c, Nil))), z)(f) ----> f(a, f(b, f(c, z)))
+    @tailrec
     def foldRight[A,B](as: List[A], z: B)(f: (A, B) => B): B = // Utility functions
       as match {
         case Nil => z
-        case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+//        case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+        case Cons(x, xs) => foldRight(xs, f(x, z))(f)
     }
 
     def sum2(ns: List[Int]) = foldRight(ns, 0)((x,y) => x + y)
@@ -141,12 +143,14 @@ object Ch03 {
     // discussed in the previous chapter.
     // foldLeft(Cons(a, Nil), z)(f) ----> f(z, a)
     // foldLeft(Cons(a, Cons(b, Nil)), z)(f) ----> f(f(z, a), b)
-    // foldLeft(Cons(a, Cons(b, Cons(c, Nil))), z)(f) ----> f(f(f(a, z), b), c)
+    // foldLeft(Cons(a, Cons(b, Cons(c, Nil))), z)(f) ----> f(f(f(z, a), b), c)
+
+    @tailrec
     def foldLeft[A,B](ns: List[A], z: B)(f: (B, A) => B): B =
       ns match {
         case Nil => z
-        case Cons(x, xs) => f(foldLeft(xs, z)(f), x)
-    }
+        case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
+      }
 
     // EXERCISE 11: Write sum, product, and a function to compute the length of a list using foldLeft.
 
