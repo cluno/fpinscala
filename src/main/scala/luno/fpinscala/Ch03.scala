@@ -1,5 +1,7 @@
 package luno.fpinscala
 
+import scala.annotation.tailrec
+
 object Ch03 {
 
   sealed trait List[+A] // `List` data type, parameterized on a type, `A`
@@ -37,19 +39,20 @@ object Ch03 {
         case Cons(h,t) => Cons(h, append(t, a2))
       }
 
+    // foldRight(Cons(a, Nil), z)(f) ----> f(a, z)
+    // foldRight(Cons(a, Cons(b, Nil)), z)(f) ----> f(a, f(b, z))
+    // foldRight(Cons(a, Cons(b, Cons(c, Nil))), z)(f) ----> f(a, f(b, f(c, z)))
     def foldRight[A,B](as: List[A], z: B)(f: (A, B) => B): B = // Utility functions
       as match {
         case Nil => z
         case Cons(x, xs) => f(x, foldRight(xs, z)(f))
     }
 
-    def sum2(ns: List[Int]) =
-      foldRight(ns, 0)((x,y) => x + y)
+    def sum2(ns: List[Int]) = foldRight(ns, 0)((x,y) => x + y)
 
-    def product2(ns: List[Double]) =
-      foldRight(ns, 1.0)(_ * _) // `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
+    def product2(ns: List[Double]) = foldRight(ns, 1.0)(_ * _) // `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
 
-    // EXERCISE 1: What will the result of the following match expression be?
+    // EXERCISE 1: What will the result of the following match expression be? - 3
     //
     //    val x = List(1,2,3,4,5) match {
     //      case Cons(x, Cons(2, Cons(4, _))) => x
@@ -70,32 +73,135 @@ object Ch03 {
 
     // EXERCISE 3: Generalize tail to the function drop, which removes the first
     // n elements from a list.
-    def drop[A](l: List[A], n: Int): List[A] = sys.error("todo")
+    def drop[A](l: List[A], n: Int): List[A] = {
+      var ret = l
+      var count = n
+      while(count > 0){
+        ret = tail(ret)
+        count -= 1
+      }
+      ret
+    }
 
-    // EXERCISE 4: Implement dropWhile,10 which removes elements from the
+    // EXERCISE 4: Implement dropWhile, which removes elements from the
     // List prefix as long as they match a predicate.
-    def dropWhile[A](l: List[A], f: A => Boolean): List[A] = sys.error("todo")
+    def dropWhile[A](l: List[A], f: A => Boolean): List[A] = {
+      def head[A](l: List[A]): A = l match {
+        case Cons(h, t) => h
+        case _ => throw new NoSuchElementException("head of empty list")
+      }
+
+      @tailrec
+      def go(l: List[A]): List[A] = {
+       if(!f(head(l))) l
+       else go(tail(l))
+      }
+
+      go(l)
+    }
 
     // EXERCISE 5: Using the same idea, implement the function setHead for
     // replacing the first element of a List with a different value
-    def setHead[A](l: List[A], h: A): List[A] = sys.error("todo")
+    def setHead[A](l: List[A], h: A): List[A] = l match {
+      case Nil => Cons(h, Nil)
+      case Cons(c, cs) => Cons(h, cs)
+    }
 
     // EXERCISE 6: Not everything works out so nicely. Implement a function,
     // init, which returns a List consisting of all but the last element of a List.
-    def init[A](l: List[A]): List[A] = sys.error("todo")
+    def init[A](l: List[A]): List[A] = {
+      def head[A](l: List[A]): A = l match {
+        case Cons(h, t) => h
+        case _ => throw new NoSuchElementException("head of empty list")
+      }
+
+      def go(l: List[A]): List[A] = l match {
+        case Cons(h, Nil) => Nil
+        case Cons(h, t) => Cons(head(l), go(tail(l)))
+      }
+
+      go(l)
+    }
+
+    // EXERCISE 7: Can product implemented using foldRight immediately halt the recursion and return 0.0
+    // if it encounters a 0.0? Why or why not?
+    //
+
+    // EXERCISE 8: See what happens when you pass Nil and Cons themselves to
+    // foldRight, like this: foldRight(List(1,2,3), Nil:List[Int])(Cons(_,_))
+    // What do you think this says about the relationship between foldRight and the data constructors of List?
+    // List(1, 2, 3) = foldRight(List(1,2,3), Nil:List[Int])(Cons(_,_)) = Cons(1,Cons(2,Cons(3,Nil)))
 
     // EXERCISE 9: Compute the length of a list using foldRight.
-    def length[A](l: List[A]): Int = sys.error("todo")
+    def length[A](l: List[A]): Int = foldRight(l, 0)((x, y) => y + 1)
 
     // EXERCISE 10: foldRight is not tail-recursive and will StackOverflow
     // for large lists. Convince yourself that this is the case, then write another general
     // list-recursion function, foldLeft that is tail-recursive, using the techniques we
     // discussed in the previous chapter.
-    def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = sys.error("todo")
+    // foldLeft(Cons(a, Nil), z)(f) ----> f(z, a)
+    // foldLeft(Cons(a, Cons(b, Nil)), z)(f) ----> f(f(z, a), b)
+    // foldLeft(Cons(a, Cons(b, Cons(c, Nil))), z)(f) ----> f(f(f(a, z), b), c)
+    def foldLeft[A,B](ns: List[A], z: B)(f: (B, A) => B): B =
+      ns match {
+        case Nil => z
+        case Cons(x, xs) => f(foldLeft(xs, z)(f), x)
+    }
+
+    // EXERCISE 11: Write sum, product, and a function to compute the length of a list using foldLeft.
+
+    // EXERCISE 12: Write a function that returns the reverse of a list (so given
+    // List(1,2,3) it returns List(3,2,1)). See if you can write it using a fold.
+
+    // EXERCISE 13 (hard): Can you write foldLeft in terms of foldRight?
+    // How about the other way around?
+
+    // EXERCISE 14: Implement append in terms of either foldLeft or foldRight.
+
+    // EXERCISE 15 (hard): Write a function that concatenates a list of lists into a
+    // single list. Its runtime should be linear in the total length of all lists.
+    // Try to use functions we have already defined.
+
+    // EXERCISE 16: Write a function that transforms a list of integers by adding 1
+    // to each element.
+    // (Reminder: this should be a pure function that returns a new List!)
+
+    // EXERCISE 17: Write a function that turns each value in a List[Double] into a String.
 
     // EXERCISE 18: Write a function map, that generalizes modifying each element
     // in a list while maintaining the structure of the list.
     def map[A,B](l: List[A])(f: A => B): List[B] = sys.error("todo")
-  }
 
+    // EXERCISE 19: Write a function filter that removes elements from a list
+    // unless they satisfy a given predicate. Use it to remote all odd numbers from a List[Int].
+
+    // EXERCISE 20: Write a function flatMap, that works like map except that
+    // the function given will return a list instead of a single result, and that list should be
+    // inserted into the final resulting list. Here is its signature:
+    def flatMap[A,B](l: List[A])(f: A => List[B]): List[B] = ???
+
+    // EXERCISE 21: Can you use flatMap to implement filter?
+
+    // EXERCISE 22: Write a function that accepts two lists and constructs a new list
+    // by adding corresponding elements. For example, List(1,2,3) and List(4,5,6) becomes List(5,7,9)
+
+    // EXERCISE 23: Generalize the function you just wrote so that it's not specific to integers or addition.
+
+    // EXERCISE 24 (hard): As an example, implement hasSubsequence for checking whether
+    // a List contains another List as a subsequence
+
+    // EXERCISE 25: Write a function size that counts the number of nodes in a tree.
+    // EXERCISE 26: Write a function maximum that returns the maximum element in a Tree[Int].
+    // (Note: in Scala, you can use x.max(y) or x max y to compute the maximum of two integers x and y.)
+
+    // EXERCISE 27: Write a function depth that returns the maximum path length
+    // from the root of a tree to any leaf.
+
+    // EXERCISE 28: Write a function map, analogous to the method of the same name on List, that
+    // modifies each element in a tree with a given function
+
+    // EXERCISE 29: Generalize size, maximum, depth, and map, writing a new function fold that abstracts
+    // over their similarities. Reimplement them in terms of this more general function.
+    // Can you draw an analogy between this fold function and the left and right folds for List?
+  }
 }

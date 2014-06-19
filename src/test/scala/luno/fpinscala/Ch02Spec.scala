@@ -20,4 +20,3 @@ class Ch02Spec extends Specification with ScalaCheck {
     }
   }
 }
-

@@ -29,20 +29,13 @@ object Ch02 {
   // that they only have one implementation! Here's an example:
 
   // Exercise 3: Implement `partial1`.
-
   def partial1[A,B,C](a: A, f: (A,B) => C): B => C = (b: B) => f(a, b)
 
-  // val part = partial1(4, (a: Int, b: Int) => x + y)
-  // part(0) = 4
-  // part(1) = 5
 
   // Exercise 4: Implement `curry`.
   // Note that `=>` associates to the right, so we could
   // write the return type as `A => B => C`
   def curry[A,B,C](f: (A, B) => C): A => (B => C) = (a: A) => (b: B) => f(a, b)
-
-  // val curried = curry((a: Int, b: Int) => a + b)
-  // curried(5)(3) = 8
 
   // NB: The `Function2` trait has a `curried` method already
 
