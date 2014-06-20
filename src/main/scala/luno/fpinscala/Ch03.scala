@@ -196,10 +196,12 @@ object Ch03 {
     // the function given will return a list instead of a single result, and that list should be
     // inserted into the final resulting list. Here is its signature:
     // List(List(0, 1, 2), List(3, 4, 5), List(6, 7, 8)) --g(x)--> List(1, 2, 3, 4, 5, 6, 7, 8, 9)
-    def flatMap[A,B](l: List[A])(f: A => List[B]): List[B] = ???
-//      foldLeft(l, List[B]())((b, a) => f(a))
+    // val flattenBy2x = flatMap(xs)((x: List[Int]) => map(x)( y => y * 2 )
+    def flatMap[A,B](l: List[A])(f: A => List[B]): List[B] = concat(map(l)(f))
 
-    // EXERCISE 21: Can you use flatMap to implement filter?
+    // EXERCISE 21: Can you use flatMap to implement filter
+    // ex) filter2( List(List(1, 2, 3), List(4, 5), List(7)) )( x => length(x) > 2 )
+    def filter2[A](l: List[A])(p: A => Boolean): List[A] = flatMap(l)((x: A) => if(p(x)) List(x) else Nil)
 
     // EXERCISE 22: Write a function that accepts two lists and constructs a new list
     // by adding corresponding elements. For example, List(1,2,3) and List(4,5,6) becomes List(5,7,9)
