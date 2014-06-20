@@ -13,6 +13,7 @@ import scala.collection.immutable.{Nil => NNil}
 class Ch03Spec extends Specification with ScalaCheck {
 
   val list: Gen[NList[Int]] = Gen.listOf(Gen.choose(0, 1000))
+  val list_of_lists: Gen[NList[NList[Int]]] = Gen.listOf(list)
 
   def toCList[A](l: NList[A]): CList[A] = l match {
     case h :: t => Cons(h, toCList(t))
