@@ -211,7 +211,6 @@ object Ch03 {
     // EXERCISE 24 (hard): As an example, implement hasSubsequence for checking whether
     // a List contains another List as a subsequence
 
-    //
     // EXERCISE 25: Write a function size that counts the number of nodes in a tree.
     // EXERCISE 26: Write a function maximum that returns the maximum element in a Tree[Int].
     // (Note: in Scala, you can use x.max(y) or x max y to compute the maximum of two integers x and y.)
