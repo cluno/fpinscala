@@ -62,5 +62,20 @@ class Ch03Spec extends Specification with ScalaCheck {
       xs: NList[Int] =>
         xs.foldLeft(1)(_ + _) == foldLeft(toCList(xs), 1)(_ + _)
     }
+  } ^ "sum3" ! check {
+    Prop.forAll(list suchThat (_.length > 5)) {
+      xs: NList[Int] =>
+        xs.sum == sum3(toCList(xs))
+    }
+  } ^ "length2" ! check {
+    Prop.forAll(list suchThat (_.length > 5)) {
+      xs: NList[Int] =>
+        xs.length == CList.length2(toCList(xs))
+    }
+  } ^ "reverse" ! check {
+    Prop.forAll(list suchThat (_.length > 5)) {
+      xs: NList[Int] =>
+        xs.reverse == toNList(reverse(toCList(xs)))
+    }
   }
 }
