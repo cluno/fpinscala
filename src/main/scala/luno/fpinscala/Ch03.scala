@@ -4,53 +4,62 @@ import scala.annotation.tailrec
 
 object Ch03 {
 
-  sealed trait List[+A] // `List` data type, parameterized on a type, `A`
-  case object Nil extends List[Nothing] // A `List` data constructor representing the empty list
-  case class Cons[+A](head: A, tail: List[A]) extends List[A] // Another data constructor, representing nonempty lists. Note that `tail` is another `List[A]`, which may be `Nil` or another `Cons`.
+  sealed trait List[+A]
+
+  // `List` data type, parameterized on a type, `A`
+  case object Nil extends List[Nothing]
+
+  // A `List` data constructor representing the empty list
+  case class Cons[+A](head: A, tail: List[A]) extends List[A]
+
+  // Another data constructor, representing nonempty lists. Note that `tail` is another `List[A]`, which may be `Nil` or another `Cons`.
 
   sealed trait Tree[+A]
+
   case class Leaf[A](value: A) extends Tree[A]
+
   case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
 
   object List {
 
-    def sum(ints: List[Int]): Int = ints match { // A function that uses pattern matching to add up a list of integers
+    def sum(ints: List[Int]): Int = ints match {
+      // A function that uses pattern matching to add up a list of integers
       case Nil => 0 // The sum of the empty list is 0.
-      case Cons(x,xs) => x + sum(xs) // The sum of a list starting with `x` is `x` plus the sum of the rest of the list.
+      case Cons(x, xs) => x + sum(xs) // The sum of a list starting with `x` is `x` plus the sum of the rest of the list.
     }
 
     def product(ds: List[Double]): Double = ds match {
       case Nil => 1.0
       case Cons(0.0, _) => 0.0
-      case Cons(x,xs) => x * product(xs)
+      case Cons(x, xs) => x * product(xs)
     }
 
     def apply[A](as: A*): List[A] = // Variadic function syntax
       if (as.isEmpty) Nil
       else Cons(as.head, apply(as.tail: _*))
 
-//    val example = Cons(1, Cons(2, Cons(3, Nil)))
-//    val example2 = List(1,2,3)
-//    val total = sum(example)
+    //    val example = Cons(1, Cons(2, Cons(3, Nil)))
+    //    val example2 = List(1,2,3)
+    //    val total = sum(example)
 
     def append[A](a1: List[A], a2: List[A]): List[A] =
       a1 match {
         case Nil => a2
-        case Cons(h,t) => Cons(h, append(t, a2))
+        case Cons(h, t) => Cons(h, append(t, a2))
       }
 
     // foldRight(Cons(a, Nil), z)(f) ----> f(a, z)
     // foldRight(Cons(a, Cons(b, Nil)), z)(f) ----> f(a, f(b, z))
     // foldRight(Cons(a, Cons(b, Cons(c, Nil))), z)(f) ----> f(a, f(b, f(c, z)))
     @tailrec
-    def foldRight[A,B](as: List[A], z: B)(f: (A, B) => B): B = // Utility functions
+    def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = // Utility functions
       as match {
         case Nil => z
-//        case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+        //        case Cons(x, xs) => f(x, foldRight(xs, z)(f))
         case Cons(x, xs) => foldRight(xs, f(x, z))(f)
       }
 
-    def sum2(ns: List[Int]) = foldRight(ns, 0)((x,y) => x + y)
+    def sum2(ns: List[Int]) = foldRight(ns, 0)((x, y) => x + y)
 
     def product2(ns: List[Double]) = foldRight(ns, 1.0)(_ * _) // `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
 
@@ -78,7 +87,7 @@ object Ch03 {
     def drop[A](l: List[A], n: Int): List[A] = {
       var ret = l
       var count = n
-      while(count > 0){
+      while (count > 0) {
         ret = tail(ret)
         count -= 1
       }
@@ -95,8 +104,8 @@ object Ch03 {
 
       @tailrec
       def go(l: List[A]): List[A] = {
-       if(!f(head(l))) l
-       else go(tail(l))
+        if (!f(head(l))) l
+        else go(tail(l))
       }
 
       go(l)
@@ -146,7 +155,7 @@ object Ch03 {
     // foldLeft(Cons(a, Cons(b, Nil)), z)(f) ----> f(f(z, a), b)
     // foldLeft(Cons(a, Cons(b, Cons(c, Nil))), z)(f) ----> f(f(f(z, a), b), c)
     @tailrec
-    def foldLeft[A,B](ns: List[A], z: B)(f: (B, A) => B): B =
+    def foldLeft[A, B](ns: List[A], z: B)(f: (B, A) => B): B =
       ns match {
         case Nil => z
         case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
@@ -154,17 +163,19 @@ object Ch03 {
 
     // EXERCISE 11: Write sum, product, and a function to compute the length of a list using foldLeft.
     def sum3(ns: List[Int]) = foldLeft(ns, 0)(_ + _)
+
     def product3(ns: List[Double]) = foldLeft(ns, 1.0)(_ * _)
+
     def length2[A](ns: List[A]): Int = foldLeft(ns, 0)((b, a) => b + 1)
 
     // EXERCISE 12: Write a function that returns the reverse of a list (so given
     // List(1,2,3) it returns List(3,2,1)). See if you can write it using a fold.
     // foldLeft(Cons(a, Cons(b, Cons(c, Nil))), z)(f) ----> f(f(f(z, a), b), c)
-    def reverse[A](ns: List[A]): List[A] = foldLeft(ns, List[A]()) ((b, a) => Cons(a, b))
+    def reverse[A](ns: List[A]): List[A] = foldLeft(ns, List[A]())((b, a) => Cons(a, b))
 
     // EXERCISE 13 (hard): Can you write foldLeft in terms of foldRight?
     // How about the other way around?
-    def foldLeft2[A,B](ns: List[A], z: B)(f: (B, A) => B): B = ???
+    def foldLeft2[A, B](ns: List[A], z: B)(f: (B, A) => B): B = ???
 
     // EXERCISE 14: Implement append in terms of either foldLeft or foldRight.
     def append2[A](a1: List[A], a2: List[A]): List[A] = foldLeft(a1, a2)((b, a) => Cons(a, b))
@@ -185,44 +196,92 @@ object Ch03 {
 
     // EXERCISE 18: Write a function map, that generalizes modifying each element
     // in a list while maintaining the structure of the list.
-    def map[A,B](l: List[A])(f: A => B): List[B] = foldLeft(l, List[B]())((b, a) => Cons(f(a), b))
+    def map[A, B](l: List[A])(f: A => B): List[B] = foldLeft(l, List[B]())((b, a) => Cons(f(a), b))
 
     // EXERCISE 19: Write a function filter that removes elements from a list
     // unless they satisfy a given predicate. Use it to remote all odd numbers from a List[Int].
     def filter[A](l: List[A])(p: A => Boolean): List[A] =
-      foldLeft(l, List[A]())((b, a) => if(p(a)) Cons(a, b) else Nil)
+      foldLeft(l, List[A]())((b, a) => if (p(a)) Cons(a, b) else Nil)
 
     // EXERCISE 20: Write a function flatMap, that works like map except that
     // the function given will return a list instead of a single result, and that list should be
     // inserted into the final resulting list. Here is its signature:
     // List(List(0, 1, 2), List(3, 4, 5), List(6, 7, 8)) --g(x)--> List(1, 2, 3, 4, 5, 6, 7, 8, 9)
-    // val flattenBy2x = flatMap(xs)((x: List[Int]) => map(x)( y => y * 2 )
-    def flatMap[A,B](l: List[A])(f: A => List[B]): List[B] = concat(map(l)(f))
+    // val flattenBy2x = flatMap(xs)( x => map(x)( y => y * 2 ))
+    def flatMap[A, B](l: List[A])(f: A => List[B]): List[B] = concat(map(l)(f))
 
     // EXERCISE 21: Can you use flatMap to implement filter
     // ex) filter2( List(List(1, 2, 3), List(4, 5), List(7)) )( x => length(x) > 2 )
-    def filter2[A](l: List[A])(p: A => Boolean): List[A] = flatMap(l)((x: A) => if(p(x)) List(x) else Nil)
+    def filter2[A](l: List[A])(p: A => Boolean): List[A] = flatMap(l)((x: A) => if (p(x)) List(x) else Nil)
 
     // EXERCISE 22: Write a function that accepts two lists and constructs a new list
     // by adding corresponding elements. For example, List(1,2,3) and List(4,5,6) becomes List(5,7,9)
+    def zipAdd(as: List[Int], bs: List[Int]): List[Int] = as match {
+      case Nil => Nil
+      case Cons(ha, ta) => bs match {
+        case Nil => Nil
+        case Cons(hb, tb) => Cons(ha + hb, zipAdd(ta, tb))
+      }
+    }
 
     // EXERCISE 23: Generalize the function you just wrote so that it's not specific to integers or addition.
+    def zipWith[A, B, C](as: List[A], bs: List[B])(f: (A, B) => C): List[C] = as match {
+      case Nil => Nil
+      case Cons(ha, ta) => bs match {
+        case Nil => Nil
+        case Cons(hb, tb) => Cons(f(ha, hb), zipWith(ta, tb)(f))
+      }
+    }
 
     // EXERCISE 24 (hard): As an example, implement hasSubsequence for checking whether
     // a List contains another List as a subsequence
+    def hasSubsequence[A](xs: List[A], sub: List[A]): Boolean = ???
+  }
 
+  object Tree {
+
+    // def fold[A, B](t: Tree)(f: A => B):
     // EXERCISE 25: Write a function size that counts the number of nodes in a tree.
+    def size(t: Tree[_]): Int = t match {
+      case Leaf(_) => 1
+      case Branch(l, r) => size(l) + size(r) + 1
+    }
+
     // EXERCISE 26: Write a function maximum that returns the maximum element in a Tree[Int].
     // (Note: in Scala, you can use x.max(y) or x max y to compute the maximum of two integers x and y.)
+    def maximum(t: Tree[_]): Int = t match {
+      case Leaf(_) => _
+      case Branch(l, r) => maximum(l) max maximum(r)
+    }
 
     // EXERCISE 27: Write a function depth that returns the maximum path length
     // from the root of a tree to any leaf.
+    def depth(t: Tree[_]): Int = t match {
+      case Leaf(_) => 0
+      case Branch(l, r) => (depth(l) max depth(r)) + 1
+    }
 
     // EXERCISE 28: Write a function map, analogous to the method of the same name on List, that
     // modifies each element in a tree with a given function
+    def map[A, B](t: Tree[A])(f: A => B): Tree[B] = t match {
+      case Leaf(v) => Leaf(f(v))
+      case Branch(l, r) => Branch(map(l)(f), map(r)(f))
+    }
 
     // EXERCISE 29: Generalize size, maximum, depth, and map, writing a new function fold that abstracts
     // over their similarities. Reimplement them in terms of this more general function.
     // Can you draw an analogy between this fold function and the left and right folds for List?
+    def fold[A, B](t: Tree[A])(f: A => B)(g: (B, B) => B): B = t match {
+      case Leaf(v) => f(v)
+      case Branch(l, r) => g(fold(l)(f)(g), fold(r)(f)(g))
+    }
+
+    def size2(t: Tree[_]): Int = fold(t)(v => 1)(_ + _ + 1)
+
+    def maximum2(t: Tree[Int]): Int = fold(t)(v => v)(_ max _)
+
+    def depth2(t: Tree[_]): Int = fold(t)(v => 0)(_ max _ + 1)
+
+    def map2[A, B](t: Tree[A])(f: A => B): Tree[B] = fold[A, Tree[B]] (t) (v => Leaf(f(v))) ((l, r) => Branch(l, r))
   }
 }
