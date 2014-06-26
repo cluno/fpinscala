@@ -5,23 +5,15 @@ import scala.annotation.tailrec
 object Ch03 {
 
   sealed trait List[+A]
-
-  // `List` data type, parameterized on a type, `A`
   case object Nil extends List[Nothing]
-
-  // A `List` data constructor representing the empty list
   case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
-  // Another data constructor, representing nonempty lists. Note that `tail` is another `List[A]`, which may be `Nil` or another `Cons`.
-
   sealed trait Tree[+A]
-
   case class Leaf[A](value: A) extends Tree[A]
-
   case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
 
   object List {
-
+    
     def sum(ints: List[Int]): Int = ints match {
       // A function that uses pattern matching to add up a list of integers
       case Nil => 0 // The sum of the empty list is 0.
@@ -239,8 +231,7 @@ object Ch03 {
   }
 
   object Tree {
-
-    // def fold[A, B](t: Tree)(f: A => B):
+    
     // EXERCISE 25: Write a function size that counts the number of nodes in a tree.
     def size(t: Tree[_]): Int = t match {
       case Leaf(_) => 1
